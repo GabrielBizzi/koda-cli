@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 import { resolve } from "path";
-import { readFileSync } from "fs";
-import UpdateNotifier from "update-notifier";
+import { readFileSync } from "fs"
 import chalk from "chalk";
 import { color, info, level, program as cli } from "./utils";
 import { CommandFactory } from "./index";
@@ -11,15 +10,7 @@ chalk.level = 1;
 
 const pkg: File.Package = JSON.parse(
   readFileSync(resolve(__dirname, "../package.json"), "utf8")
-);
-
-const notifier = UpdateNotifier({ pkg, shouldNotifyInNpmScript: true });
-notifier.fetchInfo();
-if (notifier.update) {
-  console.log(
-    info(`[i]`) + `Update available: ${info(notifier.update.latest)}`
-  );
-}
+)
 
 for (const command of CommandFactory.values()) {
   cli
