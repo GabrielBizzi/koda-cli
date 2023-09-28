@@ -1,6 +1,6 @@
 {
   "name": "@koda-dev/koda-cli",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "",
   "main": "./src/cli.js",
   "types": "bin/cli.d.ts",
