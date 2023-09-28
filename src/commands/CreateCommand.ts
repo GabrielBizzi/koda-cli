@@ -197,35 +197,10 @@ class CreateCommand extends BaseCommand {
                 spinner.stop();
               }
 
-              const rootFolderName =
-                this.commandArgs[this.commandArgs.length - 1];
-
-              const packageJsonPath = path.join(this.nameApp, "package.json");
-              if (fs.existsSync(packageJsonPath)) {
-                const packageJson = JSON.parse(
-                  fs.readFileSync(packageJsonPath, "utf8")
-                );
-
-                packageJson.name = rootFolderName;
-
-                fs.writeFileSync(
-                  packageJsonPath,
-                  JSON.stringify(packageJson, null, 2),
-                  "utf8"
-                );
-
-                spinner.succeed(
-                  "The project was created successfully with 0 vulnerabilities!"
-                );
-                spinner.stop();
-              } else {
-                spinner.fail(
-                  error(
-                    "Could not find package.json file in the project directory!"
-                  )
-                );
-                spinner.stop();
-              }
+              spinner.succeed(
+                "The project was created successfully with 0 vulnerabilities!"
+              );
+              spinner.stop();
               return;
             });
           }
