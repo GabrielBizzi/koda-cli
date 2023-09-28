@@ -4,6 +4,7 @@ import BaseCommand from "./BaseCommand";
 import { exec } from "child_process";
 import path, { resolve } from "path";
 import process from "process";
+import fs from "fs";
 
 interface Action {
   name: string;
@@ -15,6 +16,11 @@ interface Action {
 
 const spinner = new Spinner().spinner;
 
+function havePoint(text: string): boolean {
+  const regex = /\./;
+  return regex.test(text);
+}
+
 class CreateCommand extends BaseCommand {
   static readonly TemplateActions: Action[] = [
     {
@@ -25,6 +31,15 @@ class CreateCommand extends BaseCommand {
         "create-react-app",
         "--template",
         "bizzi-standard-react-typescript",
+      ],
+    },
+    {
+      name: "NextJS TSX - Acelerai Boilerplate",
+      value: "simple",
+      command: "git",
+      args: [
+        "clone",
+        "https://github.com/GabrielBizzi/next-ts-boilerplate-acelerai",
       ],
     },
     // {
@@ -132,12 +147,12 @@ class CreateCommand extends BaseCommand {
           } ${this.commandArgs.join(" ")}\` exited.`
         )
       );
-    } else {
-      spinner.text = "Project created, removing optional dependencies...";
       spinner.stop();
-
+    } else {
       switch (this.commandArgs[0]) {
         case "create-react-app":
+          spinner.start();
+          spinner.text = "Project created, removing optional dependencies...";
           exec(
             `cd ${this.nameApp} && npm uninstall react-scripts`,
             (errorStdout, stdout, stderr) => {
@@ -163,6 +178,107 @@ class CreateCommand extends BaseCommand {
             }
           );
           break;
+        case "clone":
+          spinner.start();
+          spinner.text = "Project created, installing dependencies...";
+
+          if (havePoint(this.nameApp)) {
+            exec(`npm install`, (errorStdout, stdout, stderr) => {
+              if (errorStdout) {
+                console.log(error(stderr));
+                spinner.stop();
+
+                return;
+              }
+              if (stderr) {
+                spinner.fail(
+                  error(`Could not install the dependencies on the project!`)
+                );
+                spinner.stop();
+              }
+
+              const rootFolderName =
+                this.commandArgs[this.commandArgs.length - 1];
+
+              const packageJsonPath = path.join(this.nameApp, "package.json");
+              if (fs.existsSync(packageJsonPath)) {
+                const packageJson = JSON.parse(
+                  fs.readFileSync(packageJsonPath, "utf8")
+                );
+
+                packageJson.name = rootFolderName;
+
+                fs.writeFileSync(
+                  packageJsonPath,
+                  JSON.stringify(packageJson, null, 2),
+                  "utf8"
+                );
+
+                spinner.succeed(
+                  "The project was created successfully with 0 vulnerabilities!"
+                );
+                spinner.stop();
+              } else {
+                spinner.fail(
+                  error(
+                    "Could not find package.json file in the project directory!"
+                  )
+                );
+                spinner.stop();
+              }
+              return;
+            });
+          }
+
+          exec(
+            `cd ${this.nameApp} && npm install`,
+            (errorStdout, stdout, stderr) => {
+              if (errorStdout) {
+                console.log(error(stderr));
+                spinner.stop();
+
+                return;
+              }
+              if (stderr) {
+                spinner.fail(
+                  error(`Could not install the dependencies on the project!`)
+                );
+                spinner.stop();
+              }
+
+              const rootFolderName =
+                this.commandArgs[this.commandArgs.length - 1];
+
+              const packageJsonPath = path.join(this.nameApp, "package.json");
+              if (fs.existsSync(packageJsonPath)) {
+                const packageJson = JSON.parse(
+                  fs.readFileSync(packageJsonPath, "utf8")
+                );
+
+                packageJson.name = rootFolderName;
+
+                fs.writeFileSync(
+                  packageJsonPath,
+                  JSON.stringify(packageJson, null, 2),
+                  "utf8"
+                );
+
+                spinner.succeed(
+                  "The project was created successfully with 0 vulnerabilities!"
+                );
+                spinner.stop();
+              } else {
+                spinner.fail(
+                  error(
+                    "Could not find package.json file in the project directory!"
+                  )
+                );
+                spinner.stop();
+              }
+
+              return;
+            }
+          );
       }
     }
   }
