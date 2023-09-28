@@ -1,10 +1,9 @@
-import { error, info, inquirer, spawn } from "../utils";
+import { exec } from "child_process";
+import fs from "fs";
+import path from "path";
+import { error, inquirer, spawn } from "../utils";
 import Spinner from "../utils/loader";
 import BaseCommand from "./BaseCommand";
-import { exec } from "child_process";
-import path, { resolve } from "path";
-import process from "process";
-import fs from "fs";
 
 interface Action {
   name: string;
@@ -167,6 +166,7 @@ class CreateCommand extends BaseCommand {
                   error(`Could not remove the vulnerabilities on the project!`)
                 );
                 spinner.stop();
+                return;
               }
 
               spinner.succeed(
@@ -195,6 +195,7 @@ class CreateCommand extends BaseCommand {
                   error(`Could not install the dependencies on the project!`)
                 );
                 spinner.stop();
+                return;
               }
 
               spinner.succeed(
@@ -219,6 +220,7 @@ class CreateCommand extends BaseCommand {
                   error(`Could not install the dependencies on the project!`)
                 );
                 spinner.stop();
+                return;
               }
 
               const rootFolderName =
@@ -242,6 +244,8 @@ class CreateCommand extends BaseCommand {
                   "The project was created successfully with 0 vulnerabilities!"
                 );
                 spinner.stop();
+
+                return;
               } else {
                 spinner.fail(
                   error(
@@ -249,9 +253,9 @@ class CreateCommand extends BaseCommand {
                   )
                 );
                 spinner.stop();
-              }
 
-              return;
+                return;
+              }
             }
           );
       }
