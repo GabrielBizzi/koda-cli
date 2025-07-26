@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
 import { resolve } from "path";
-import { readFileSync } from "fs"
+import { readFileSync } from "fs";
 import chalk from "chalk";
 import { color, info, level, program as cli } from "./utils";
-import { CommandFactory } from "./index";
+import { CommandFactory, CommandWithArgsFactory } from "./index";
 
 chalk.level = 1;
 
 const pkg: File.Package = JSON.parse(
   readFileSync(resolve(__dirname, "../package.json"), "utf8")
-)
+);
 
 for (const command of CommandFactory.values()) {
   cli
@@ -20,6 +20,21 @@ for (const command of CommandFactory.values()) {
     .action(async (appName: string) => {
       try {
         await command.run(appName);
+      } catch (error) {
+        console.log(error);
+        cli.outputHelp();
+      }
+    });
+}
+
+for (const command of CommandWithArgsFactory.values()) {
+  cli
+    .command(command.getUsage())
+    .alias(command.getAlias())
+    .description(command.getDescription())
+    .action(async (...args: string[]) => {
+      try {
+        await command.run(...args);
       } catch (error) {
         console.log(error);
         cli.outputHelp();
