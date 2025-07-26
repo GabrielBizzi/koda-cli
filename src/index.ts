@@ -3,7 +3,9 @@ import { CreateCommand, InfoCommand } from "./commands";
 import BaseCommandMultiArg from "./commands/BaseCommandOptions";
 import GenerateCommand from "./commands/GenerateCommand";
 import UpdateFeedCommand from "./commands/UpdateFeedCommand";
-import "dotenv/config";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const CommandFactory = new Map<string, BaseCommand>();
 const CommandWithArgsFactory = new Map<string, BaseCommandMultiArg>();

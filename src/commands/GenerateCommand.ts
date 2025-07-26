@@ -94,6 +94,9 @@ import { use${capitalize(screenName)} } from './hooks/use${capitalize(
 const ${screenName} = () => {
   const {
     handleUpdateVisibleColumns,
+    handleUpdatePaginationSize,
+    searchParams,
+    currentPage,
     columnProperties,
     loading,
     stateList,
@@ -182,6 +185,7 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { usePagination } from '@/hooks/usePagination';
 import { api, buildFilter } from '@/services/api';
 import { buildQueryParams } from '@/utils/buildQueryParams';
+import { ColumnProps } from '@ti_torra/web';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { ${capitalize(screenName)}Response, ${capitalize(
@@ -209,8 +213,7 @@ export const use${screenName} = () => {
   const DEFAULT_COLUMNS_STATE = useMemo(
     () =>
       [
-        { name: 'name 1', label: 'Label 1', visible: true },
-        { name: 'name 2', label: 'Label 2', visible: true },
+		{ name: 'firstKey', label: 'Label 1', visible: true },
       ] as ColumnProps<${capitalize(screenName)}State>[],
     []
   );
