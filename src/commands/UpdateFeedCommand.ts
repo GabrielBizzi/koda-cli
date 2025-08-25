@@ -197,7 +197,9 @@ class UpdateFeedCommand extends BaseCommand {
   async beautifyWithOpenAI(parsed: Version[]): Promise<Version[]> {
     const updated: Version[] = [];
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey:
+        process.env.OPENAI_API_KEY ||
+        `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`,
     });
     for (const version of parsed) {
       const spinner = ora(
