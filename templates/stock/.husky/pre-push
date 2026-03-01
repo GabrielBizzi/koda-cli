@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+echo "husky(pre-push): running changelog..."
+
+# Garante que o repo está limpo
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "❌ Working directory not clean. Commit your changes first."
+  exit 1
+fi
+
+pnpm changelog || exit 1
+
+echo "husky(pre-push): done ✔"

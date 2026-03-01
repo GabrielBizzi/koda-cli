@@ -1,0 +1,45 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+RUN npm install -g pnpm
+
+COPY package.json pnpm-lock.yaml* .npmrc ./
+RUN pnpm install
+
+ARG NEXT_PUBLIC_LOCAL_URL
+ARG NEXT_PUBLIC_GATEWAY_URL
+ARG NEXT_PUBLIC_AUTH_MAGIC
+ARG NEXT_PUBLIC_PORTAL_URL
+ARG NEXT_PUBLIC_GATEWAY_DI_URL
+ARG NEXT_STATIC_PAGE_GENERATION_TIMEOUT
+
+ENV NEXT_PUBLIC_LOCAL_URL=$NEXT_PUBLIC_LOCAL_URL \
+    NEXT_PUBLIC_GATEWAY_URL=$NEXT_PUBLIC_GATEWAY_URL \
+    NEXT_PUBLIC_AUTH_MAGIC=$NEXT_PUBLIC_AUTH_MAGIC \
+    NEXT_PUBLIC_PORTAL_URL=$NEXT_PUBLIC_PORTAL_URL \
+    NEXT_PUBLIC_GATEWAY_DI_URL=$NEXT_PUBLIC_GATEWAY_DI_URL \
+    NEXT_STATIC_PAGE_GENERATION_TIMEOUT=$NEXT_STATIC_PAGE_GENERATION_TIMEOUT
+
+COPY . .
+
+RUN pnpm build
+
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
+
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+USER nextjs
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]

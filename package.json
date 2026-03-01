@@ -1,6 +1,6 @@
 {
   "name": "@koda-dev/koda-cli",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "main": "./src/cli.js",
   "types": "bin/cli.d.ts",
@@ -10,7 +10,7 @@
     "test": "jest --colors",
     "prebuild": "rimraf bin",
     "build": "npx tsc",
-    "postbuild": "npm run changelog",
+    "postbuild": "node copy-templates.js && npm run changelog",
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build"
   },

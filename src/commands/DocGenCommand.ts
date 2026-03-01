@@ -4,23 +4,44 @@ import fs from "fs";
 import path from "path";
 import BaseCommand from "./BaseCommand";
 import { success, error } from "../utils/console";
+import { Command } from "commander";
+
+interface DocGenOptions {
+  out?: string;
+  json?: boolean;
+  entry?: string;
+}
 
 class DocGenCommand extends BaseCommand {
   constructor() {
     super({
       name: "doc:gen",
       description: "Gera documentação do projeto com TypeDoc",
-      usage: "koda doc:gen [--out docs] [--json] [--entry src]",
+      usage: "doc:gen",
     });
   }
 
-  async run(...args: string[]) {
-    const flags = this.parseFlags(args);
-    const out = flags["--out"] || "docs";
-    const isJson = flags["--json"];
-    const entry: any = flags["--entry"] || "src";
+  public register(cli: Command): void {
+    cli
+      .command(this.getUsage())
+      .alias(this.getAlias())
+      .description(this.getDescription())
+      .option("--out <folder>", "Output folder (default: docs)")
+      .option("--entry <path>", "Entry directory (default: src)")
+      .option("--json", "Generate JSON output")
+      .action(async (_: string, options: any) => {
+        await this.run(undefined, options);
+      });
+  }
 
-    if (!fs.existsSync(path.resolve(process.cwd(), entry))) {
+  async run(_arg?: string, options?: DocGenOptions) {
+    const out = options?.out || "docs";
+    const isJson = options?.json ?? false;
+    const entry = options?.entry || "src";
+
+    const entryPath = path.resolve(process.cwd(), entry);
+
+    if (!fs.existsSync(entryPath)) {
       console.log(error(`❌ Diretório de entrada "${entry}" não encontrado.`));
       return;
     }
@@ -33,7 +54,9 @@ class DocGenCommand extends BaseCommand {
       out,
     ];
 
-    if (isJson) argsTypedoc.push("--json", `${out}/documentation.json`);
+    if (isJson) {
+      argsTypedoc.push("--json", `${out}/documentation.json`);
+    }
 
     const spinner = ora("Gerando documentação com TypeDoc...").start();
 
@@ -41,20 +64,9 @@ class DocGenCommand extends BaseCommand {
       await spawn("npx", ["typedoc", ...argsTypedoc]);
       spinner.succeed("📘 Documentação gerada com sucesso!");
       console.log(success(`✅ Saída disponível em: ${out}`));
-    } catch (e) {
+    } catch {
       spinner.fail("❌ Falha ao gerar documentação.");
     }
-  }
-
-  parseFlags(args: string[]) {
-    const flags: Record<string, string | boolean> = {};
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
-      if (arg.startsWith("--")) {
-        flags[arg] = args[i + 1]?.startsWith("--") ? true : args[i + 1] || true;
-      }
-    }
-    return flags;
   }
 }
 

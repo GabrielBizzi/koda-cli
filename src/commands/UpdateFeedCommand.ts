@@ -5,6 +5,7 @@ import { success, error } from "../utils/console";
 import { OpenAI } from "openai";
 import ora from "ora";
 import { warn } from "console";
+import { Command } from "commander";
 
 interface Version {
   version: string;
@@ -25,9 +26,20 @@ class UpdateFeedCommand extends BaseCommand {
     });
   }
 
+  public register(cli: Command): void {
+    cli
+      .command(this.getUsage())
+      .alias(this.getAlias())
+      .description(this.getDescription())
+      .option("--no-ai", "Desativa melhoria via OpenAI")
+      .action(async (_: string, options: any) => {
+        await this.run(undefined, options);
+      });
+  }
+
   async validateAndMerge(
     parsed: Version[],
-    outputPath: string
+    outputPath: string,
   ): Promise<Version[]> {
     let existing: Version[] = [];
 
@@ -37,7 +49,7 @@ class UpdateFeedCommand extends BaseCommand {
 
         if (raw.length === 0) {
           console.log(
-            warn("⚠️ Arquivo JSON existe, mas está vazio. Iniciando do zero.")
+            warn("⚠️ Arquivo JSON existe, mas está vazio. Iniciando do zero."),
           );
         } else {
           const parsedJson = JSON.parse(raw);
@@ -45,41 +57,41 @@ class UpdateFeedCommand extends BaseCommand {
             existing = parsedJson;
           } else {
             console.log(
-              warn("⚠️ JSON existente não é um array. Ignorando conteúdo.")
+              warn("⚠️ JSON existente não é um array. Ignorando conteúdo."),
             );
           }
         }
       } catch (e) {
         console.log(
           error(
-            "❌ Erro ao ler ou interpretar o arquivo JSON existente. Será ignorado."
-          )
+            "❌ Erro ao ler ou interpretar o arquivo JSON existente. Será ignorado.",
+          ),
         );
       }
     }
 
     const existingVersions = new Set(
-      existing.map((v) => `${v.version}|${v.url || ""}`)
+      existing.map((v) => `${v.version}|${v.url || ""}`),
     );
 
     const newVersions = parsed.filter(
-      (v) => !existingVersions.has(`${v.version}|${v.url || ""}`)
+      (v) => !existingVersions.has(`${v.version}|${v.url || ""}`),
     );
 
     if (newVersions.length === 0) {
       console.log(
-        success("✅ Nenhuma nova versão encontrada. Tudo atualizado!")
+        success("✅ Nenhuma nova versão encontrada. Tudo atualizado!"),
       );
       return existing;
     }
 
     console.log(
-      success(`🆕 ${newVersions.length} nova(s) versão(ões) detectada(s).`)
+      success(`🆕 ${newVersions.length} nova(s) versão(ões) detectada(s).`),
     );
     return [...newVersions, ...existing];
   }
-  async run(...args: string[]): Promise<void> {
-    const useOpenAI = true;
+  public async run(_arg?: string, options?: { ai?: boolean }): Promise<void> {
+    const useOpenAI = options?.ai !== false;
 
     const changelogPath = path.resolve(process.cwd(), "CHANGELOG.md");
     const outputPath = path.resolve(process.cwd(), "public/version-feed.json");
@@ -92,30 +104,26 @@ class UpdateFeedCommand extends BaseCommand {
     const content = fs.readFileSync(changelogPath, "utf-8");
     const parsed = await this.parseChangelog(content);
 
-    // 🔍 Carrega o version-feed.json existente (se houver)
     let existingFeed: Version[] = [];
     if (fs.existsSync(outputPath)) {
-      const raw = fs.readFileSync(outputPath, "utf-8");
       try {
-        existingFeed = JSON.parse(raw);
-      } catch (err) {
+        existingFeed = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
+      } catch {
         console.log(error("⚠️ Erro ao ler version-feed.json existente"));
       }
     }
 
-    // 🔎 Pega as versões já existentes (versão + URL, para evitar duplicação com/sem link)
     const existingVersions = new Set(
-      existingFeed.map((v) => `${v.version}|${v.url || ""}`)
+      existingFeed.map((v) => `${v.version}|${v.url || ""}`),
     );
 
-    // 🚀 Filtra somente as versões novas
     const newVersions = parsed.filter(
-      (v) => !existingVersions.has(`${v.version}|${v.url || ""}`)
+      (v) => !existingVersions.has(`${v.version}|${v.url || ""}`),
     );
 
     if (newVersions.length === 0) {
       console.log(
-        success("✅ Nenhuma nova versão encontrada. Tudo atualizado!")
+        success("✅ Nenhuma nova versão encontrada. Tudo atualizado!"),
       );
       return;
     }
@@ -124,13 +132,14 @@ class UpdateFeedCommand extends BaseCommand {
       ? await this.beautifyWithOpenAI(parsed)
       : parsed;
 
-    const finalOutput = await this.validateAndMerge(finalParsed, outputPath);
+    const finalOutput = [...newVersions, ...existingFeed];
 
     fs.writeFileSync(outputPath, JSON.stringify(finalOutput, null, 2));
+
     console.log(
       success(
-        `✅ Feed atualizado com ${newVersions.length} nova(s) versão(ões)`
-      )
+        `✅ Feed atualizado com ${newVersions.length} nova(s) versão(ões)`,
+      ),
     );
   }
 
@@ -143,7 +152,7 @@ class UpdateFeedCommand extends BaseCommand {
 
     for (const line of lines) {
       const versionWithLinkAndDate = line.match(
-        /^## \[(.*?)\]\((.*?)\) \((.*?)\)/
+        /^## \[(.*?)\]\((.*?)\) \((.*?)\)/,
       ); // Ex: ## [1.42.0](URL) (2025-07-18)
 
       if (versionWithLinkAndDate) {
@@ -201,7 +210,7 @@ class UpdateFeedCommand extends BaseCommand {
     });
     for (const version of parsed) {
       const spinner = ora(
-        `✨ Processando versão ${version.version}...`
+        `✨ Processando versão ${version.version}...`,
       ).start();
 
       const newChanges: Version["changes"] = {};

@@ -1,3 +1,5 @@
+import { Command } from "commander";
+
 interface BaseCommandOptions {
   name: string;
   description: string;
@@ -5,7 +7,7 @@ interface BaseCommandOptions {
   alias?: string;
 }
 
-class BaseCommand {
+abstract class BaseCommand {
   private readonly name: string;
   private readonly description: string;
   private readonly usage: string;
@@ -18,8 +20,9 @@ class BaseCommand {
     this.usage = usage;
     this.alias = alias ?? this.name[0];
   }
+  public abstract run(...args: any[]): Promise<void>;
 
-  public async run(_appName?: string): Promise<void> {}
+  public abstract register(cli: Command): void;
 
   public getName(): string {
     return this.name;
