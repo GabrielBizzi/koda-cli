@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { program as cli } from "./utils";
 import { commands } from "./index";
 
