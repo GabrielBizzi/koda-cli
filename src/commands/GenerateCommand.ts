@@ -12,6 +12,7 @@ interface GenerateOptions {
 
 class GenerateCommand extends BaseCommand {
   constructor() {
+    // Criação de construtor
     super({
       name: "generate",
       description: "Gera telas ou rotas no padrão Stock",
