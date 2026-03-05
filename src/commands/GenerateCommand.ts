@@ -12,6 +12,7 @@ interface GenerateOptions {
 
 class GenerateCommand extends BaseCommand {
   constructor() {
+    // Criação de funções para atualização de comandos
     super({
       name: "generate",
       description: "Gera telas ou rotas no padrão Stock",
@@ -20,6 +21,28 @@ class GenerateCommand extends BaseCommand {
   }
 
   public register(cli: Command): void {
+    cli
+      .command(this.getUsage())
+      .alias(this.getAlias())
+      .description(this.getDescription())
+      .option("--with-modal", "Gera estrutura com modal")
+      .action(async (type: string, name: string, options: GenerateOptions) => {
+        await this.run(type, name, options);
+      });
+  }
+
+  public create(cli: Command): void {
+    cli
+      .command(this.getUsage())
+      .alias(this.getAlias())
+      .description(this.getDescription())
+      .option("--with-modal", "Gera estrutura com modal")
+      .action(async (type: string, name: string, options: GenerateOptions) => {
+        await this.run(type, name, options);
+      });
+  }
+
+  public updateCli(cli: Command): void {
     cli
       .command(this.getUsage())
       .alias(this.getAlias())
