@@ -22,7 +22,6 @@ class GenerateCommand extends BaseCommand {
   public register(cli: Command): void {
     cli
       .command(this.getUsage())
-      .alias(this.getAlias())
       .description(this.getDescription())
       .option("--with-modal", "Gera estrutura com modal")
       .action(async (type: string, name: string, options: GenerateOptions) => {
